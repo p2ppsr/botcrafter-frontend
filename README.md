@@ -1,8 +1,8 @@
-# Ninja UI
+# BotCrafter
 
-UI for interacting with the UTXO Ninja and Dojo
+Train and trade AI chatbots with unique personalities as NFTs on Bitcoin SV
 
-A live deployment of the master branch of this repository is at [ninja.babbage.systems](https://ninja.babbage.systems)
+A live deployment of the master branch of this repository is at [botcrafter.babbage.systems](https://botcrafter.babbage.systems)
 
 ## Development Instructions
 
