@@ -1,5 +1,8 @@
 import React from 'react'
 import Welcome from './pages/Welcome'
+import MyBots from './pages/MyBots'
+import Bot from './pages/Bot'
+import Conversation from './pages/Conversation'
 import Theme from './Theme'
 import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
@@ -12,6 +15,9 @@ const App = () => {
       <Router>
         <Switch>
           <Route exact path='/' component={Welcome} />
+          <Route exact path='/my-bots' component={MyBots} />
+          <Route path='/conversation/:botID/:conversationID' component={Conversation} />
+          <Route path='/bot/:botID' component={Bot} />
           <Route
             default component={() => (
               <center style={{ marginTop: '2em' }}>
