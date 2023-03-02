@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import boomerang from 'boomerang-http'
+import request from '../utils/request'
 import { Typography, TextField, Button, Dialog, DialogContent, DialogTitle, DialogActions } from '@mui/material'
 import { Link } from 'react-router-dom'
 
@@ -18,28 +18,30 @@ const Conversation = ({ match, history }) => {
       ]
     })
     setLoading(true)
-      const response = await boomerang(
-        'POST',
-        'http://localhost:4444/sendMessage',
-        {
-          botID: match.params.botID,
-          conversationID: match.params.conversationID,
-          message: text
-        }
-      )
-    setMessages(oldMessages => {
-      return [
-        ...oldMessages,
-        { role: 'assistant', content: response.result }
-      ]
-    })
-    setText('')
+    const response = await request(
+      'POST',
+      'http://localhost:4444/sendMessage',
+      {
+        botID: match.params.botID,
+        conversationID: match.params.conversationID,
+        message: text
+      }
+    )
+    if (response.status !== 'error') {
+      setMessages(oldMessages => {
+        return [
+          ...oldMessages,
+          { role: 'assistant', content: response.result }
+        ]
+      })
+      setText('')
+    }
     setLoading(false)
   }
 
   useEffect(() => {
     (async () => {
-      const response = await boomerang(
+      const response = await request(
         'POST',
         'http://localhost:4444/findBotById',
         {
@@ -47,7 +49,7 @@ const Conversation = ({ match, history }) => {
         }
       )
       setBot(response.result)
-      const messagesResponse = await boomerang(
+      const messagesResponse = await request(
         'POST',
         'http://localhost:4444/listConversationMessages',
         {
@@ -59,28 +61,28 @@ const Conversation = ({ match, history }) => {
       setLoading(false)
     })()
   }, [])
-  
-    return (
-      <div>
-        <Button onClick={() => history.go(-1)}>back</Button>
-        <h1>{bot.name}</h1>
-        <i>{bot.motto}</i>
+
+  return (
+    <div>
+      <Button onClick={() => history.go(-1)}>back</Button>
+      <h1>{bot.name}</h1>
+      <i>{bot.motto}</i>
       {messages.map((x, i) => (
         <p key={i}><b>{x.role}</b>: {x.content}</p>
       ))}
-        {loading && <p>...</p>}
-        <br />
-        <br />
-        <br />
-        <form onSubmit={handleSend}>
-      <TextField
-        onChange={e => setText(e.target.value)}
+      {loading && <p>...</p>}
+      <br />
+      <br />
+      <br />
+      <form onSubmit={handleSend}>
+        <TextField
+          onChange={e => setText(e.target.value)}
           value={text}
-            fullWidth
-            disabled={loading}
-        placeholder='Write a message...'
+          fullWidth
+          disabled={loading}
+          placeholder='Write a message...'
         />
-        </form>
+      </form>
     </div>
   )
 }

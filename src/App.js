@@ -1,6 +1,7 @@
 import React from 'react'
 import Welcome from './pages/Welcome'
 import MyBots from './pages/MyBots'
+import Marketplace from './pages/Marketplace'
 import Bot from './pages/Bot'
 import Conversation from './pages/Conversation'
 import Theme from './Theme'
@@ -16,6 +17,7 @@ const App = () => {
         <Switch>
           <Route exact path='/' component={Welcome} />
           <Route exact path='/my-bots' component={MyBots} />
+          <Route exact path='/marketplace' component={Marketplace} />
           <Route path='/conversation/:botID/:conversationID' component={Conversation} />
           <Route path='/bot/:botID' component={Bot} />
           <Route
