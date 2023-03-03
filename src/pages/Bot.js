@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import request from '../utils/request'
-import { Typography, TextField, Button, Dialog, DialogContent, DialogTitle, DialogActions } from '@mui/material'
+import { TextField, Button, Dialog, DialogContent, DialogTitle, DialogActions } from '@mui/material'
 import { Link } from 'react-router-dom'
 import { toast } from 'react-toastify'
+import { host } from '../constants'
 
 const Bot = ({ match, history }) => {
   const [bot, setBot] = useState({})
@@ -16,7 +17,7 @@ const Bot = ({ match, history }) => {
   const handleCreate = async () => {
     const response = await request(
       'POST',
-      'http://localhost:4444/createConversation',
+      `${host}/createConversation`,
       {
         title,
         botID: match.params.botID
@@ -31,7 +32,7 @@ const Bot = ({ match, history }) => {
   const handleSell = async () => {
     const response = await request(
       'POST',
-      'http://localhost:4444/listBotOnMarketplace',
+      `${host}/listBotOnMarketplace`,
       {
         botID: match.params.botID,
         amount: sellAmount
@@ -39,7 +40,7 @@ const Bot = ({ match, history }) => {
     )
     if (response.status !== 'error') {
       setSellOpen(false)
-      history.push(`/marketplace`)
+      history.push('/marketplace')
       toast.success(`${bot.name} was listed for sale!`)
     }
   }
@@ -48,7 +49,7 @@ const Bot = ({ match, history }) => {
     (async () => {
       const response = await request(
         'POST',
-        'http://localhost:4444/findBotById',
+        `${host}/findBotById`,
         {
           id: match.params.botID
         }
@@ -56,7 +57,7 @@ const Bot = ({ match, history }) => {
       setBot(response.result)
       const conversationsResponse = await request(
         'POST',
-        'http://localhost:4444/listConversationsWithBot',
+        `${host}/listConversationsWithBot`,
         {
           botID: match.params.botID
         }
@@ -64,7 +65,7 @@ const Bot = ({ match, history }) => {
       setConversations(conversationsResponse.result)
       const saleResult = await request(
         'POST',
-        'http://localhost:4444/isBotOnMarketplace',
+        `${host}/isBotOnMarketplace`,
         {
           botID: match.params.botID
         }

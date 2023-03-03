@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { Typography, TextField, Button, Dialog, DialogContent, DialogTitle, DialogActions, Select, MenuItem, IconButton, Card } from '@mui/material'
+import { TextField, Button, Dialog, DialogContent, DialogTitle, DialogActions, Card } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { Link } from 'react-router-dom'
-import Delete from '@mui/icons-material/Delete'
-import Add from '@mui/icons-material/Add'
 import request from '../utils/request'
 import paidRequest from '../utils/paidRequest'
 import { toast } from 'react-toastify'
+import { host } from '../constants'
 
 const useStyles = makeStyles({
 }, { name: 'Marketplace' })
@@ -24,7 +23,7 @@ const Marketplace = ({ history }) => {
 
   const handleSell = async e => {
     e.preventDefault()
-    const response = await request('post', 'http://localhost:4444/listBotOnMarketplace', {
+    const response = await request('post', `${host}/listBotOnMarketplace`, {
       botID: botToSell.id,
       amount: sellAmount
     })
@@ -47,7 +46,7 @@ const Marketplace = ({ history }) => {
 
   const handleBuy = async e => {
     e.preventDefault()
-    const response = await paidRequest('post', 'http://localhost:4444/buyBotFromMarketplace', {
+    const response = await paidRequest('post', `${host}/buyBotFromMarketplace`, {
       botID: botToBuy.id
     })
     if (response.status !== 'error') {
@@ -61,7 +60,7 @@ const Marketplace = ({ history }) => {
     (async () => {
       const marketplaceBots = await request(
         'POST',
-        'http://localhost:4444/listMarketplaceBots',
+        `${host}/listMarketplaceBots`,
         {}
       )
       if (marketplaceBots.status !== 'error') {
@@ -69,7 +68,7 @@ const Marketplace = ({ history }) => {
       }
       const response = await request(
         'POST',
-        'http://localhost:4444/listOwnBots',
+        `${host}/listOwnBots`,
         {}
       )
       if (response.status !== 'error') {
@@ -83,20 +82,22 @@ const Marketplace = ({ history }) => {
       <Button onClick={() => history.go(-1)}>Back</Button>
       <h1>Marketplace</h1>
       <Button onClick={() => setSellListOpen(true)}>Sell a bot</Button>
-      {bots.map((x, i) => (
-        <Card key={i}>
-          <h2>{x.name}</h2>
-          <i>{x.motto}</i>
-          <p>Amount: {x.amount}</p>
-          <Button
-            variant='contained' onClick={() => {
-              setBuyOpen(true)
-              setBotToBuy(x)
-            }}
-          >Buy
-          </Button>
-        </Card>
-      ))}
+      <div className={classes.marketplace_grid}>
+        {bots.map((x, i) => (
+          <Card key={i}>
+            <h2>{x.name}</h2>
+            <i>{x.motto}</i>
+            <p>Amount: {x.amount}</p>
+            <Button
+              variant='contained' onClick={() => {
+                setBuyOpen(true)
+                setBotToBuy(x)
+              }}
+            >Buy
+            </Button>
+          </Card>
+        ))}
+      </div>
       <Dialog open={sellListOpen} fullWidth maxWidth='xl' onClose={() => setSellListOpen(false)}>
         <DialogTitle>Sell a Bot</DialogTitle>
         <DialogContent>

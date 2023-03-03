@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import request from '../utils/request'
-import { Typography, TextField, Button, Dialog, DialogContent, DialogTitle, DialogActions } from '@mui/material'
-import { Link } from 'react-router-dom'
+import { TextField, Button } from '@mui/material'
+import { host } from '../constants'
 
 const Conversation = ({ match, history }) => {
   const [bot, setBot] = useState({})
@@ -20,7 +20,7 @@ const Conversation = ({ match, history }) => {
     setLoading(true)
     const response = await request(
       'POST',
-      'http://localhost:4444/sendMessage',
+      `${host}/sendMessage`,
       {
         botID: match.params.botID,
         conversationID: match.params.conversationID,
@@ -43,7 +43,7 @@ const Conversation = ({ match, history }) => {
     (async () => {
       const response = await request(
         'POST',
-        'http://localhost:4444/findBotById',
+        `${host}/findBotById`,
         {
           id: match.params.botID
         }
@@ -51,7 +51,7 @@ const Conversation = ({ match, history }) => {
       setBot(response.result)
       const messagesResponse = await request(
         'POST',
-        'http://localhost:4444/listConversationMessages',
+        `${host}/listConversationMessages`,
         {
           botID: match.params.botID,
           conversationID: match.params.conversationID

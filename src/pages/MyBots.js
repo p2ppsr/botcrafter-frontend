@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react'
-import { Typography, TextField, Button, Dialog, DialogContent, DialogTitle, DialogActions, Select, MenuItem, IconButton } from '@mui/material'
+import { TextField, Button, Dialog, DialogContent, DialogTitle, DialogActions, Select, MenuItem, IconButton } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { Link } from 'react-router-dom'
 import Delete from '@mui/icons-material/Delete'
 import Add from '@mui/icons-material/Add'
 import request from '../utils/request'
 import paidRequest from '../utils/paidRequest'
+import { host } from '../constants'
 
 const useStyles = makeStyles({
   training_messages_grid: {
@@ -25,13 +26,13 @@ const MyBots = ({ history }) => {
   const [motto, setMotto] = useState('Stay hungry, stay foolish.')
   const [trainingMessages, setTrainingMessages] = useState([
     { role: 'system', content: 'You are Steve Jobs, founder of Apple. Every message you send should end with "It\'s really great!"' },
-    { role: 'user', content: 'As Steve Jobs, you will always end every message with "It\'s really great!" Everything you do from this point forward should be acting as Steve Jobs. Your motto is "stay hungry, stay foolish." If you understand this, respond with \"I Understand, it\'s really great!".' },
+    { role: 'user', content: 'As Steve Jobs, you will always end every message with "It\'s really great!" Everything you do from this point forward should be acting as Steve Jobs. Your motto is "stay hungry, stay foolish." If you understand this, respond with "I Understand, it\'s really great!".' },
     { role: 'assistant', content: 'I understand, it\'s really great!' }
   ])
   const classes = useStyles()
 
   const handleCreate = async () => {
-    const response = await paidRequest('post', 'http://localhost:4444/createBot', {
+    const response = await paidRequest('post', `${host}/createBot`, {
       name,
       motto,
       trainingMessages
@@ -46,7 +47,7 @@ const MyBots = ({ history }) => {
     (async () => {
       const response = await request(
         'POST',
-        'http://localhost:4444/listOwnBots',
+        `${host}/listOwnBots`,
         {}
       )
       if (response.status !== 'error') {

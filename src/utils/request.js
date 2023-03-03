@@ -11,12 +11,14 @@ export default async (method, url, params) => {
     })
     const parsedBody = JSON.parse(Buffer.from(response.body).toString('utf8'))
     if (parsedBody.status === 'error') {
-      console.error(parsedBody)
-      toast.error(
-        parsedBody.description ||
-        parsedBody.message ||
-        'Request failed!'
-      )
+      if (parsedBody.description !== 'Register a user account before taking this action!' || url.indexOf('/getOwnProfile') === -1) {
+        console.error(parsedBody)
+        toast.error(
+          parsedBody.description ||
+          parsedBody.message ||
+          'Request failed!'
+        )
+      }
     }
     return parsedBody
   } catch (e) {

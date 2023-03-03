@@ -46,7 +46,7 @@ const baseTheme = createTheme({
   },
   palette: {
     primary: {
-      main: '#424242'
+      main: '#5E00A9'
     },
     secondary: {
       main: '#FC433F'
@@ -159,7 +159,7 @@ const useStyles = makeStyles({
   },
   '@global a': {
     textDecoration: 'none',
-    color: '#FC433F'
+    color: '#5E00A9'
   },
   '@global h1': {
     fontWeight: 'bold',
@@ -172,7 +172,6 @@ const useStyles = makeStyles({
     color: '#424242'
   },
   '@global h3': {
-
     fontSize: '1.4em',
     color: '#424242'
   },
