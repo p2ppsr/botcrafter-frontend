@@ -69,6 +69,9 @@ const useStyles = makeStyles(theme => ({
   },
   royalties: {
     marginBottom: '1.5em'
+  },
+  card_actions: {
+    flexDirection: 'row-reverse'
   }
 }), { name: 'Welcome' })
 
@@ -207,7 +210,7 @@ const Welcome = () => {
         <ul>
           <li className={classes.list_item}><Typography><b>Train</b> custom AI-powered chatbots</Typography></li>
           <li className={classes.list_item}><Typography><b>Trade</b> your creations as NFTs on the marketplace</Typography></li>
-          <li className={classes.list_item}><Typography><b>Explore</b> bots with different pesonalities from all around the world</Typography></li>
+          <li className={classes.list_item}><Typography><b>Explore</b> bots with different personalities from all around the world</Typography></li>
         </ul>
         <br />
         <br />
@@ -249,22 +252,22 @@ const Welcome = () => {
                         {royaltyError.error && <Typography color='secondary' paragraph>{royaltyError.error}</Typography>}
                         {royaltiesLoading && <LinearProgress />}
                       </CardContent>
-                      <CardActions>
+                      <CardActions className={classes.card_actions}>
                         {!royaltiesLoading && !royaltyError.error && <Button color='primary' onClick={handleCashOut}>Collect Now</Button>}
                         {!royaltiesLoading && royaltyError.error && <Button color='secondary' onClick={() => setRoyaltyErrorConfirmOpen(true)}>Clear Error</Button>}
-                        </CardActions>
+                      </CardActions>
                     </Card>
                   )}
                   <div className={classes.choice_grid}>
-                  <Link to='/my-bots'>
-                    <Button variant='contained'>My Bots</Button>
-                  </Link>
-                  <Link to='/marketplace'>
-                    <Button variant='outlined'>
-                      Marketplace
-                    </Button>
+                    <Link to='/my-bots'>
+                      <Button variant='contained'>My Bots</Button>
                     </Link>
-                    </div>
+                    <Link to='/marketplace'>
+                      <Button variant='outlined'>
+                        Marketplace
+                      </Button>
+                    </Link>
+                  </div>
                   </>}
             </>
             )}
