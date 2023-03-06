@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { TextField, Button, Dialog, DialogContent, DialogTitle, DialogActions, Card, CardContent, Typography, IconButton, Divider, Hidden, LinearProgress } from '@mui/material'
+import { TextField, Button, Dialog, DialogContent, DialogTitle, DialogContentText, DialogActions, Card, CardContent, Typography, IconButton, Divider, Hidden, LinearProgress, List, ListItem, ListItemText } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { Link } from 'react-router-dom'
 import request from '../utils/request'
@@ -48,7 +48,10 @@ const useStyles = makeStyles(theme => ({
     gridTemplateColumns: '1fr auto auto',
     gridGap: '0.5em',
     alignItems: 'center',
-    width: '100%'
+    width: '100%',
+    [theme.breakpoints.down('sm')]: {
+      gridTemplateColumns: '1fr'
+    }
   },
   card: {
     borderRadius: '16px',
@@ -63,7 +66,7 @@ const useStyles = makeStyles(theme => ({
 
 const Marketplace = ({ history }) => {
   const [sellListOpen, setSellListOpen] = useState(false)
-  const [sellAmount, setSellAmount] = useState(5000)
+  const [sellAmount, setSellAmount] = useState(35000)
   const [sellAmountOpen, setSellAmountOpen] = useState(false)
   const [botToSell, setBotToSell] = useState({})
   const [bots, setBots] = useState([])
@@ -72,28 +75,36 @@ const Marketplace = ({ history }) => {
   const [buyOpen, setBuyOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const [buyLoading, setBuyLoading] = useState(false)
+  const [sellLoading, setSellLoading] = useState(false)
   const classes = useStyles()
 
   const handleSell = async e => {
-    e.preventDefault()
-    const response = await request('post', `${host}/listBotOnMarketplace`, {
-      botID: botToSell.id,
-      amount: sellAmount
-    })
-    if (response.status !== 'error') {
-      setOwnBots(old => {
-        old.splice(ownBots.findIndex(x => x.id === botToSell.id), 1)
-        return [...old]
+    try {
+      e.preventDefault()
+      setSellLoading(true)
+      const response = await request('post', `${host}/listBotOnMarketplace`, {
+        botID: botToSell.id,
+        amount: sellAmount
       })
-      const newBots = bots.concat({
-        ...botToSell,
-        amount: sellAmount,
-        sellerName: 'You'
-      })
-      setBots(newBots)
-      setSellAmountOpen(false)
-      setBotToSell({})
-      toast.success(`You listed ${botToSell.name} for sale!`)
+      if (response.status !== 'error') {
+        setOwnBots(old => {
+          old.splice(ownBots.findIndex(x => x.id === botToSell.id), 1)
+          return [...old]
+        })
+        const newBots = bots.concat({
+          ...botToSell,
+          amount: sellAmount,
+          sellerName: 'You'
+        })
+        setBots(newBots)
+        setSellAmountOpen(false)
+        setBotToSell({})
+        toast.success(`You listed ${botToSell.name} for sale!`)
+      }
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setSellLoading(false)
     }
   }
 
@@ -202,45 +213,56 @@ const Marketplace = ({ history }) => {
         <DialogTitle>Sell a Bot</DialogTitle>
         <DialogContent>
           {ownBots.length === 0 && (
-            <div>
-              <p>You have no bots!</p>
-              <Link to='/my-bots' onClick={() => setSellListOpen(false)}>Create one to sell</Link>
-            </div>
+            <DialogContentText>You have no bots to sell! But don't worry, <Link to='/my-bots' onClick={() => setSellListOpen(false)}>creating new bots is easy</Link>.</DialogContentText>
           )}
+          <List>
           {ownBots.map((x, i) => (
-            <div key={i}>
-              <h3>{x.name}</h3>
-              <i>{x.motto}</i>
-              <Button onClick={() => {
-                setBotToSell(x)
-                setSellListOpen(false)
-                setSellAmountOpen(true)
-              }}
-              >sell
+            <ListItem dense divider key={i}>
+              <ListItemText
+                primary={x.name}
+                secondary={x.motto}
+              />
+              <Button
+                onClick={() => {
+                  setBotToSell(x)
+                  setSellListOpen(false)
+                  setSellAmountOpen(true)
+                }}
+                variant='outlined'
+              >
+                sell
               </Button>
-            </div>
+            </ListItem>
           ))}
+          </List>
         </DialogContent>
       </Dialog>
       <Dialog open={sellAmountOpen} onClose={() => setSellAmountOpen(false)}>
         <form onSubmit={handleSell}>
-          <DialogTitle>How Much for "{botToSell.name}"</DialogTitle>
+          <DialogTitle>Do you want to sell "{botToSell.name}"?</DialogTitle>
           <DialogContent>
-            <TextField
+            {!sellLoading && <DialogContentText paragraph>Enter the amount you'd like to list {botToSell.name} for on the marketplace.</DialogContentText>}
+            {!sellLoading && <TextField
+              fullWidth
               onChange={e => setSellAmount(e.target.value)}
               value={sellAmount}
               label='Amount'
-            />
+            />}
+            {sellLoading && <LinearProgress />}
           </DialogContent>
-          <DialogActions>
-            <Button type='submit'>Sell Now</Button>
-          </DialogActions>
+          {!sellLoading && <DialogActions>
+            <Button onClick={() => {
+              setSellAmountOpen(false)
+              setSellListOpen(true)
+            }}>Back</Button>
+            <Button variant='contained' type='submit'>List Now</Button>
+          </DialogActions>}
         </form>
       </Dialog>
       <Dialog open={buyOpen} onClose={() => setBuyOpen(false)}>
         <form onSubmit={handleBuy}>
-          <DialogTitle>Want to buy "{botToBuy.name}" for {botToBuy.amount} satoshis?</DialogTitle>
-          {buyLoading && <LinearProgress />}
+          <DialogTitle>Want to buy "{botToBuy.name}" for {Number(botToBuy.amount).toLocaleString()} satoshis?</DialogTitle>
+          {buyLoading && <DialogContent><LinearProgress /></DialogContent>}
           <DialogActions>
             {!buyLoading && <Button onClick={() => setBuyOpen(false)}>Cancel</Button>}
             {!buyLoading && <Button variant='contained' type='submit'>Buy Now</Button>}

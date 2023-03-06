@@ -1,18 +1,39 @@
 import React, { useState, useEffect } from 'react'
 import request from '../utils/request'
-import { TextField, Button, Dialog, DialogContent, DialogTitle, DialogActions } from '@mui/material'
+import { Typography, TextField, Button, Dialog, DialogContent, DialogTitle, DialogActions, List, ListItem, ListItemText, IconButton } from '@mui/material'
 import { Link } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { host } from '../constants'
+import { makeStyles } from '@mui/styles'
+import ComposeIcon from '@mui/icons-material/Create'
+import ArrowBack from '@mui/icons-material/ArrowBackIos'
+
+const useStyles = makeStyles(theme => ({
+  page_wrap: {
+    ...theme.templates.page_wrap
+  },
+  conversations_header: {
+    display: 'grid',
+    gridGap: '1em',
+    gridTemplateColumns: '1fr auto',
+    alignItems: 'center',
+    marginBottom: '0.75em',
+    marginTop: '1em',
+    [theme.breakpoints.down('sm')]: {
+      gridTemplateColumns: '1fr'
+    }
+  }
+}), { name: 'Bot' })
 
 const Bot = ({ match, history }) => {
   const [bot, setBot] = useState({})
   const [conversations, setConversations] = useState([])
   const [createOpen, setCreateOpen] = useState(false)
   const [title, setTitle] = useState('New Conversation')
-  const [sellAmount, setSellAmount] = useState(5000)
+  const [sellAmount, setSellAmount] = useState(35000)
   const [sellOpen, setSellOpen] = useState(false)
   const [isBotForSale, setIsBotForSale] = useState(false)
+  const classes = useStyles()
 
   const handleCreate = async () => {
     const response = await request(
@@ -75,20 +96,35 @@ const Bot = ({ match, history }) => {
   }, [])
 
   return (
-    <div>
-      <Button onClick={() => history.go(-1)}>back</Button>
-      <h1>{bot.name}</h1>
-      <i>{bot.motto}</i>
-      <br />
-      <br />
+    <div className={classes.page_wrap}>
+      <IconButton onClick={() => history.go(-1)}><ArrowBack /></IconButton>
+      <Typography variant='h1'>{bot.name}</Typography>
+      <Typography color='textSecondary'>{bot.motto}</Typography>
       <Button disabled={isBotForSale} onClick={() => setSellOpen(true)}>{isBotForSale ? 'Listed for sale' : 'Sell This Bot'}</Button>
-      <Button onClick={() => setCreateOpen(true)}>New Conversation</Button>
+      <div className={classes.conversations_header}>
+        <Typography variant='h2'>Conversations</Typography>
+        <div>
+        <Button
+          variant='contained'
+          onClick={() => setCreateOpen(true)}
+          startIcon={<ComposeIcon />}
+        >
+          New Conversation
+          </Button>
+          </div>
+      </div>
+      <List>
       {conversations.map((x, i) => (
         <Link key={i} to={`/conversation/${match.params.botID}/${x.id}`}>
-          <h2>{x.title}</h2>
-          {/* <h3>{x.motto}</h3> TODO last messages in conversations */}
+          <ListItem button divider>
+            <ListItemText
+              primary={x.title}
+              secondary={x.lastMessage}
+            />
+          </ListItem>
         </Link>
       ))}
+      </List>
       <Dialog open={createOpen} onClose={() => setCreateOpen(false)}>
         <DialogTitle>New Conversation</DialogTitle>
         <DialogContent>
