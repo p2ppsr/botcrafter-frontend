@@ -31,7 +31,7 @@ const ConversationControls = ({ conversation, update = () => { }, history }) => 
       })
       if (response.status !== 'error') {
         setDeleteOpen(false)
-        history.push('/')
+        history.push(`/bot/${conversation.botID}`)
         toast.success(`${conversation.title} has been deleted.`)
         update()
       }

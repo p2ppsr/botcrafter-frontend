@@ -155,7 +155,7 @@ const BotControls = ({ bot, update = () => { }, history }) => {
         newTrainingMessages: trainingMessages
       })
       if (response.status !== 'error') {
-        setRenameOpen(false)
+        setRetrainOpen(false)
         toast.success(`${bot.name} is now retrained!`)
         update()
       }
