@@ -41,7 +41,12 @@ const useStyles = makeStyles(theme => ({
     }
   },
   bot_name: {
-    whiteSpace: 'nowrap'
+    whiteSpace: 'nowrap',
+    fontSize: '1.35em !important'
+  },
+  bot_motto: {
+    fontSize: '0.9em !important',
+    fontStyle: 'italic'
   },
   card_actions: {
     display: 'grid',
@@ -135,14 +140,14 @@ const Marketplace = ({ history }) => {
           `${host}/listMarketplaceBots`,
           {}
         )
-        if (marketplaceBots.status !== 'error') {
-          setBots(marketplaceBots.result)
-        }
         const response = await request(
           'POST',
           `${host}/listOwnBots`,
           {}
         )
+        if (marketplaceBots.status !== 'error') {
+          setBots(marketplaceBots.result)
+        }
         if (response.status !== 'error') {
           setOwnBots(response.result)
         }
@@ -180,7 +185,7 @@ const Marketplace = ({ history }) => {
           <Card key={i} className={classes.card}>
             <CardContent>
               <Typography className={classes.bot_name} variant='h2'>{x.name}</Typography>
-              <Typography color='textSecondary' paragraph>{x.motto}</Typography>
+              <Typography color='textSecondary' className={classes.bot_motto} paragraph>{x.motto}</Typography>
               <Typography paragraph>
                 <i>Created by:</i> {x.creatorName}
               </Typography>
@@ -216,24 +221,24 @@ const Marketplace = ({ history }) => {
             <DialogContentText>You have no bots to sell! But don't worry, <Link to='/my-bots' onClick={() => setSellListOpen(false)}>creating new bots is easy</Link>.</DialogContentText>
           )}
           <List>
-          {ownBots.map((x, i) => (
-            <ListItem dense divider key={i}>
-              <ListItemText
-                primary={x.name}
-                secondary={x.motto}
-              />
-              <Button
-                onClick={() => {
-                  setBotToSell(x)
-                  setSellListOpen(false)
-                  setSellAmountOpen(true)
-                }}
-                variant='outlined'
-              >
-                sell
-              </Button>
-            </ListItem>
-          ))}
+            {ownBots.map((x, i) => (
+              <ListItem dense divider key={i}>
+                <ListItemText
+                  primary={x.name}
+                  secondary={x.motto}
+                />
+                <Button
+                  onClick={() => {
+                    setBotToSell(x)
+                    setSellListOpen(false)
+                    setSellAmountOpen(true)
+                  }}
+                  variant='outlined'
+                >
+                  sell
+                </Button>
+              </ListItem>
+            ))}
           </List>
         </DialogContent>
       </Dialog>
@@ -247,14 +252,16 @@ const Marketplace = ({ history }) => {
               onChange={e => setSellAmount(e.target.value)}
               value={sellAmount}
               label='Amount'
-            />}
+                             />}
             {sellLoading && <LinearProgress />}
           </DialogContent>
           {!sellLoading && <DialogActions>
             <Button onClick={() => {
               setSellAmountOpen(false)
               setSellListOpen(true)
-            }}>Back</Button>
+            }}
+            >Back
+            </Button>
             <Button variant='contained' type='submit'>List Now</Button>
           </DialogActions>}
         </form>

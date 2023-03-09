@@ -1,28 +1,18 @@
 import React, { useState, useEffect } from 'react'
-import { Typography, TextField, Button, Dialog, DialogContent, DialogTitle, DialogActions, Select, MenuItem, IconButton, Hidden, Divider, List, ListItem, ListItemText, LinearProgress } from '@mui/material'
+import { Typography, TextField, Button, Dialog, DialogContent, DialogTitle, DialogActions, Select, MenuItem, IconButton, Hidden, Divider, List, ListItem, ListItemText, ListItemButton, LinearProgress } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { Link } from 'react-router-dom'
-import Delete from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material/Add'
 import request from '../utils/request'
 import paidRequest from '../utils/paidRequest'
 import { host } from '../constants'
 import ArrowBack from '@mui/icons-material/ArrowBackIos'
+import BotControls from '../components/BotControls'
+import TrainingEditor from '../components/TrainingEditor'
 
 const useStyles = makeStyles(theme => ({
   page_wrap: {
     ...theme.templates.page_wrap
-  },
-  training_messages_grid: {
-    display: 'grid',
-    gridTemplateColumns: 'auto 1fr auto',
-    gridGap: '0.5em',
-    [theme.breakpoints.down('sm')]: {
-      gridTemplateColumns: '1fr'
-    }
-  },
-  training_msg_field: {
-    // minWidth: '15em'
   },
   top_grid: {
     display: 'grid',
@@ -130,16 +120,31 @@ const MyBots = ({ history }) => {
       </Hidden>
       <Divider />
       <List>
-      {bots.map((x, i) => (
-        <Link key={i} to={`/bot/${x.id}`}>
-          <ListItem button dense divider>
-            <ListItemText
-              primary={<Typography>{x.name} <span className={classes.creator}>Created by {x.creatorName}</span> {x.isForSale && <span className={classes.listed}>LISTED</span>}</Typography>}
-              secondary={x.motto}
-            />
+        {bots.map((x, i) => (
+          <ListItem
+            key={i}
+            dense divider
+            secondaryAction={<BotControls
+              bot={x} update={async () => {
+                const response = await request(
+                  'POST',
+              `${host}/listOwnBots`,
+              {}
+                )
+                if (response.status !== 'error') {
+                  setBots(response.result)
+                }
+              }}
+                             />}
+          >
+            <ListItemButton onClick={() => history.push(`/bot/${x.id}`)}>
+              <ListItemText
+                primary={<Typography>{x.name} <span className={classes.creator}>Created by {x.creatorName}</span> {x.isForSale && <span className={classes.listed}>LISTED</span>}</Typography>}
+                secondary={x.motto}
+              />
+            </ListItemButton>
           </ListItem>
-        </Link>
-      ))}
+        ))}
       </List>
       <Dialog open={createOpen} fullWidth maxWidth='xl'>
         <DialogTitle>New Bot</DialogTitle>
@@ -162,60 +167,7 @@ const MyBots = ({ history }) => {
           />
           <br />
           <br />
-          <div className={classes.training_messages_grid}>
-            {trainingMessages.map((x, i) => (
-              <React.Fragment key={i}>
-                <Select
-                  disabled={createLoading}
-                  value={x.role}
-                  onChange={e => {
-                    trainingMessages[i].role = e.target.value
-                    setTrainingMessages([...trainingMessages])
-                  }}
-                >
-                  <MenuItem value='system'>System</MenuItem>
-                  <MenuItem value='user'>User</MenuItem>
-                  <MenuItem value='assistant'>Assistant</MenuItem>
-                </Select>
-                <TextField
-                  multiline
-                  className={classes.training_msg_field}
-                  value={x.content}
-                  onChange={e => setTrainingMessages(old => {
-                    old[i].content = e.target.value
-                    return [...old]
-                  })}
-                  fullWidth
-                  disabled={createLoading}
-                  placeholder='Training Message...'
-                />
-                <IconButton
-                  disabled={createLoading}
-                  onClick={() => {
-                    setTrainingMessages(old => {
-                      old.splice(i, 1)
-                      return [...old]
-                    })
-                  }}
-                ><Delete />
-                </IconButton>
-              </React.Fragment>
-            ))}
-          </div>
-          <br />
-          {!createLoading && <Button
-            onClick={() => {
-              const newTrainingMessages = trainingMessages.concat({
-                role: 'user',
-                content: ''
-              })
-              setTrainingMessages(newTrainingMessages)
-            }}
-            startIcon={<AddIcon />}
-            variant='outlined'
-          >
-            New Training Message
-          </Button>}
+          <TrainingEditor loading={createLoading} trainingMessages={trainingMessages} setTrainingMessages={setTrainingMessages} />
           {createLoading && <LinearProgress />}
         </DialogContent>
         {!createLoading && <DialogActions>
