@@ -244,7 +244,7 @@ const Welcome = () => {
                 : <>
                   <Typography variant='h2'>Salutations, {profile.name}!</Typography>
                   <Typography color='textSecondary' paragraph>Chat with your bots, or explore the marketplace.</Typography>
-                  {profile.balance > 0 && (
+                  {profile.balance > 1000 && (
                     <Card elevation={4} className={classes.royalties}>
                       <CardContent>
                         <Typography variant='h5'>{royaltyError.error ? 'Royalty Error' : 'You\'ve got royalties!'}</Typography>

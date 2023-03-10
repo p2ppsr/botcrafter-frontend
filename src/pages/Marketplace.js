@@ -8,6 +8,7 @@ import { toast } from 'react-toastify'
 import { host } from '../constants'
 import ArrowBack from '@mui/icons-material/ArrowBackIos'
 import AddIcon from '@mui/icons-material/Add'
+import Send from '@mui/icons-material/Send'
 
 const useStyles = makeStyles(theme => ({
   page_wrap: {
@@ -66,6 +67,37 @@ const useStyles = makeStyles(theme => ({
       transform: 'scale(1.05)',
       boxShadow: '5px 6px 21px 0px rgba(0,0,0,0.4)'
     }
+  },
+  messages_wrap: {
+    paddingTop: '1em',
+    paddingBottom: '1em'
+  },
+  send_form: {
+    width: '100%',
+    padding: '0.75em',
+    boxSizing: 'border-box'
+  },
+  send_grid: {
+    margin: 'auto',
+    maxWidth: theme.maxContentWidth,
+    display: 'grid',
+    gridGap: '0.5em',
+    gridTemplateColumns: '1fr auto'
+  },
+  message_field: {
+    margin: 'auto',
+    maxWidth: theme.maxContentWidth
+  },
+  send_button: {
+    justifySelf: 'left'
+  },
+  trial_bottom: {
+    display: 'grid',
+    gridTemplateColumns: '1fr auto auto',
+    gridGap: '1em',
+    alignItems: 'center',
+    padding: '0.5em',
+    boxSizing: 'border-box'
   }
 }), { name: 'Marketplace' })
 
@@ -78,6 +110,13 @@ const Marketplace = ({ history }) => {
   const [ownBots, setOwnBots] = useState([])
   const [botToBuy, setBotToBuy] = useState({})
   const [buyOpen, setBuyOpen] = useState(false)
+  const [tryOpen, setTryOpen] = useState(false)
+  const [trialMessages, setTrialMessages] = useState([])
+  const [tryText, setTryText] = useState('')
+  const [trialExitOpen, setTrialExitOpen] = useState(false)
+  const [tryCost, setTryCost] = useState(0)
+  const [wasTryOpen, setWasTryOpen] = useState(false)
+  const [tryLoading, setTryLoading] = useState(false)
   const [loading, setLoading] = useState(true)
   const [buyLoading, setBuyLoading] = useState(false)
   const [sellLoading, setSellLoading] = useState(false)
@@ -117,11 +156,16 @@ const Marketplace = ({ history }) => {
     e.preventDefault()
     try {
       setBuyLoading(true)
-      const response = await paidRequest('post', `${host}/buyBotFromMarketplace`, {
+      let payload = {
         botID: botToBuy.id
-      })
+      }
+      if (trialMessages.length > 0) {
+        payload.trialMessages = trialMessages
+      }
+      const response = await paidRequest('post', `${host}/buyBotFromMarketplace`, payload)
       if (response.status !== 'error') {
         setBuyOpen(false)
+        setWasTryOpen(false)
         history.push(`/bot/${botToBuy.id}`)
         toast.success(`You bought ${botToBuy.name}!`)
       }
@@ -129,6 +173,52 @@ const Marketplace = ({ history }) => {
       console.error(e)
     } finally {
       setBuyLoading(false)
+    }
+  }
+
+  const handleTry = async e => {
+    e.preventDefault()
+    setTryText(tryText.trim())
+    const newMessages = [
+        ...trialMessages,
+        { role: 'user', content: tryText.trim() }
+      ]
+    setTrialMessages(newMessages)
+    setTryLoading(true)
+    const response = await paidRequest(
+      'POST',
+      `${host}/tryMarketplaceBot`,
+      {
+        botID: botToBuy.id,
+        messages: newMessages
+      }
+    )
+    if (response.status !== 'error') {
+      setTryCost(JSON.stringify([
+        ...trialMessages,
+          { role: 'user', content: tryText },
+        { role: 'assistant', content: response.result }
+      ]).length * 20)
+      setTrialMessages(oldMessages => {
+        return [
+          ...oldMessages,
+          { role: 'assistant', content: response.result }
+        ]
+      })
+      setTryText('')
+    }
+    setTryLoading(false)
+  }
+
+  const handleKey = async e => {
+    setTryCost(JSON.stringify([
+      ...trialMessages,
+      { role: 'user', content: e.target.value }
+    ]).length * 20)
+    if (e.keyCode === 13 && e.shiftKey === false) {
+      e.stopPropagation()
+      await handleTry(e)
+      e.target.focus()
     }
   }
 
@@ -196,7 +286,7 @@ const Marketplace = ({ history }) => {
                 <Typography><b>Price:</b> {Number(x.amount).toLocaleString()} sats</Typography>
                 <Button
                   onClick={() => {
-                    // setBuyOpen(true)
+                    setTryOpen(true)
                     setBotToBuy(x)
                   }}
                 >Try
@@ -234,8 +324,9 @@ const Marketplace = ({ history }) => {
                     setSellAmountOpen(true)
                   }}
                   variant='outlined'
+                  disabled={x.isForSale}
                 >
-                  sell
+                  {x.isForSale ? 'Listed' : 'Sell'}
                 </Button>
               </ListItem>
             ))}
@@ -266,16 +357,78 @@ const Marketplace = ({ history }) => {
           </DialogActions>}
         </form>
       </Dialog>
-      <Dialog open={buyOpen} onClose={() => setBuyOpen(false)}>
+      <Dialog open={buyOpen} onClose={() => {
+        setBuyOpen(false)
+        if (wasTryOpen) {
+          setTryOpen(true)
+        }
+      }}>
         <form onSubmit={handleBuy}>
           <DialogTitle>Want to buy "{botToBuy.name}" for {Number(botToBuy.amount).toLocaleString()} satoshis?</DialogTitle>
           {buyLoading && <DialogContent><LinearProgress /></DialogContent>}
           <DialogActions>
-            {!buyLoading && <Button onClick={() => setBuyOpen(false)}>Cancel</Button>}
+            {!buyLoading && <Button onClick={() => {
+              setBuyOpen(false)
+              if (wasTryOpen) {
+                setTryOpen(true)
+              }
+            }}>Cancel</Button>}
             {!buyLoading && <Button variant='contained' type='submit'>Buy Now</Button>}
           </DialogActions>
         </form>
       </Dialog>
+      <Dialog open={tryOpen} fullWidth maxWidth='xl'>
+        <DialogTitle>Try {botToBuy.name}</DialogTitle>
+        <DialogContent>
+        {trialMessages.map((x, i) => (
+          <p key={i}><b>{x.role === 'assistant' ? botToBuy.name : 'You'}</b>: {x.content}</p>
+        ))}
+        {tryLoading && <p>...</p>}
+        <form className={classes.send_form} onSubmit={handleTry}>
+          <div className={classes.send_grid}>
+            <TextField
+              onChange={e => setTryText(e.target.value)}
+              value={tryText}
+              multiline
+              className={classes.message_field}
+              fullWidth
+              disabled={tryLoading}
+              placeholder='Write a message...'
+              onKeyUp={handleKey}
+            />
+            <IconButton className={classes.send_button} color='primary' disabled={tryLoading} type='submit'><Send /></IconButton>
+          </div>
+          </form>
+        </DialogContent>
+        <div className={classes.trial_bottom}>
+          <Typography><b>{tryCost}</b> satoshis for next message</Typography>
+          <Button onClick={() => setTrialExitOpen(true)}>Exit Trial</Button>
+          <Button variant='contained' onClick={() => {
+            setTryOpen(false)
+            setBuyOpen(true)
+            setWasTryOpen(true)
+          }}>Buy and keep conversation</Button>
+          </div>
+      </Dialog>
+      <Dialog open={trialExitOpen}>
+        <DialogTitle>Lose {botToBuy.name}?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>Your conversation with {botToBuy.name} will be permanently lost! Buy {botToBuy.name} to keep the conversation going.</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => {
+            setTrialExitOpen(false)
+            setWasTryOpen(false)
+            setTryOpen(false)
+            setTrialMessages([])
+          }}>Erase Conversation</Button>
+          <Button variant='outlined' onClick={() => {
+            setTryOpen(true)
+            setTrialExitOpen(false)
+            setWasTryOpen(false)
+          }}>Go Back</Button>
+        </DialogActions>
+        </Dialog>
     </div>
   )
 }

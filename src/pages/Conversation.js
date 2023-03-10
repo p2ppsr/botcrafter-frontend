@@ -148,9 +148,15 @@ const Conversation = ({ match, history }) => {
           botID: match.params.botID
         }
       )
-      setConversation(conversationResponse.result.find(x => x.id == match.params.conversationID))
-      setBot(response.result)
-      setMessages(messagesResponse.result)
+      if (conversationResponse.status !== 'error') {
+        setConversation(conversationResponse.result.find(x => x.id == match.params.conversationID) || {})
+      }
+      if (response.status !== 'error') {
+        setBot(response.result)
+      }
+      if (messagesResponse.status !== 'error') {
+        setMessages(messagesResponse.result)
+      }
       setLoading(false)
     })()
   }, [])

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import request from '../utils/request'
-import { Typography, TextField, Button, Dialog, DialogContent, DialogTitle, DialogActions, List, ListItem, ListItemButton, ListItemText, IconButton, Divider, LinearProgress } from '@mui/material'
+import { Typography, TextField, Button, Dialog, DialogContent, DialogTitle, DialogActions, DialogContentText, List, ListItem, ListItemButton, ListItemText, IconButton, Divider, LinearProgress } from '@mui/material'
 import { Link } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { host } from '../constants'
@@ -27,6 +27,12 @@ const useStyles = makeStyles(theme => ({
     [theme.breakpoints.down('sm')]: {
       margin: '1em'
     }
+  },
+  page_title: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    userSelect: 'none'
   },
   creator: {
     backgroundColor: '#99ffee',
@@ -119,7 +125,7 @@ const Bot = ({ match, history }) => {
     <div className={classes.page_wrap}>
       <div className={classes.top_header}>
         <IconButton onClick={() => history.go(-1)}><ArrowBack /></IconButton>
-        <Typography variant='h1'>Bot Details</Typography>
+        <Typography variant='h1' className={classes.page_title}>{bot.name}</Typography>
         {bot.name && <BotControls
           bot={bot} update={async () => {
             const response = await request(
@@ -182,12 +188,16 @@ const Bot = ({ match, history }) => {
       </List>
       <Dialog open={createOpen} onClose={() => setCreateOpen(false)}>
         <form onSubmit={handleCreate}>
-          <DialogTitle>New Conversation</DialogTitle>
+          <DialogTitle>Create Conversation</DialogTitle>
           <DialogContent>
+            <DialogContentText>Enter a title for the conversation. The name can be changed later.</DialogContentText>
+            <br />
+            <br />
             <TextField
               onChange={e => setTitle(e.target.value)}
               value={title}
               label='Title'
+              fullWidth
             />
             {loading && <LinearProgress />}
           </DialogContent>
