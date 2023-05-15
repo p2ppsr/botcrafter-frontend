@@ -69,19 +69,19 @@ const TrainingEditor = ({ loading, trainingMessages, setTrainingMessages }) => {
       <br />
       <div className={classes.new_help_grid}>
         <div>
-      <Button
-        onClick={() => {
-          const newTrainingMessages = trainingMessages.concat({
-            role: 'user',
-            content: ''
-          })
-          setTrainingMessages(newTrainingMessages)
-        }}
-        startIcon={<AddIcon />}
-        variant='outlined'
-        disabled={loading}
-                   >
-        New Training Message
+          <Button
+            onClick={() => {
+              const newTrainingMessages = trainingMessages.concat({
+                role: 'user',
+                content: ''
+              })
+              setTrainingMessages(newTrainingMessages)
+            }}
+            startIcon={<AddIcon />}
+            variant='outlined'
+            disabled={loading}
+          >
+            New Training Message
           </Button>
         </div>
         <IconButton onClick={() => setHelpOpen(true)}><Help /></IconButton>

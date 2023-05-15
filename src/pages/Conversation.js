@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, lazy } from 'react'
 import request from '../utils/request'
-import { Typography, TextField, Button, IconButton } from '@mui/material'
+import { Typography, TextField, Button, IconButton, LinearProgress } from '@mui/material'
 import { host } from '../constants'
 import { makeStyles } from '@mui/styles'
 import ConversationControls from '../components/ConversationControls'
 import ArrowBack from '@mui/icons-material/ArrowBackIos'
 import Send from '@mui/icons-material/Send'
+import Markdown from 'markdown-to-jsx'
+// Imported table styles for conversation markdown.
+import './convoStyle.css'
 
 const useStyles = makeStyles(theme => ({
   page_wrap: {
@@ -74,6 +77,18 @@ const useStyles = makeStyles(theme => ({
   },
   send_button: {
     justifySelf: 'left'
+  },
+  table: {
+    borderCollapse: 'collapse',
+    width: '100%'
+  },
+  th: {
+    border: '1px solid black',
+    padding: 8
+  },
+  td: {
+    border: '1px solid black',
+    padding: 8
   }
 }), { name: 'Conversation' })
 
@@ -83,18 +98,26 @@ const Conversation = ({ match, history }) => {
   const [text, setText] = useState('')
   const [conversation, setConversation] = useState({})
   const [loading, setLoading] = useState(true)
+  const [typing, setTyping] = useState(false)
   const classes = useStyles()
 
   const handleSend = async (e) => {
     e.preventDefault()
-    setText(text.trim())
+    setText('')
     setMessages(oldMessages => {
       return [
         ...oldMessages,
         { role: 'user', content: text.trim() }
       ]
     })
-    setLoading(true)
+    // Scroll to bottom with a delay
+    await new Promise(resolve => {
+      setTimeout(() => {
+        window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' })
+        resolve()
+      }, 500) // Adjust the delay as needed
+    })
+    setTyping(true)
     const response = await request(
       'POST',
       `${host}/sendMessage`,
@@ -111,9 +134,9 @@ const Conversation = ({ match, history }) => {
           { role: 'assistant', content: response.result }
         ]
       })
-      setText('')
     }
-    setLoading(false)
+    window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' })
+    setTyping(false)
   }
 
   const handleKey = async e => {
@@ -157,6 +180,7 @@ const Conversation = ({ match, history }) => {
       if (messagesResponse.status !== 'error') {
         setMessages(messagesResponse.result)
       }
+      window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' })
       setLoading(false)
     })()
   }, [])
@@ -186,9 +210,13 @@ const Conversation = ({ match, history }) => {
       </div>
       <div className={classes.messages_wrap}>
         {messages.map((x, i) => (
-          <p key={i}><b>{x.role === 'assistant' ? bot.name : 'You'}</b>: {x.content}</p>
+          <div key={i}>
+            <p><b>{x.role === 'assistant' ? bot.name : 'You'}</b>:</p>
+            <Markdown options={{ forceBlock: true }}>{x.content}</Markdown>
+          </div>
         ))}
-        {loading && <p>...</p>}
+        {loading && <LinearProgress />}
+        {typing && `${bot.name} is typing...`}
       </div>
       <form className={classes.send_form} onSubmit={handleSend}>
         <div className={classes.send_grid}>
