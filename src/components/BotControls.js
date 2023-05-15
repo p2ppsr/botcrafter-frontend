@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { IconButton, Menu, MenuItem, Dialog, DialogTitle, DialogContent, DialogContentText, TextField, DialogActions, Button, LinearProgress } from '@mui/material'
 import request from '../utils/request'
+import paidRequest from '../utils/paidRequest'
 import { host } from '../constants'
 import { withRouter } from 'react-router-dom'
 import MoreIcon from '@mui/icons-material/MoreVert'
@@ -150,7 +151,7 @@ const BotControls = ({ bot, update = () => { }, history }) => {
       e.preventDefault()
       e.stopPropagation()
       setLoading(true)
-      const response = await request('post', `${host}/retrainBot`, {
+      const response = await paidRequest('post', `${host}/retrainBot`, {
         botID: bot.id,
         newTrainingMessages: trainingMessages
       })
