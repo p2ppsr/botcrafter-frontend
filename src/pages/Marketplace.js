@@ -120,6 +120,7 @@ const Marketplace = ({ history }) => {
   const [loading, setLoading] = useState(true)
   const [buyLoading, setBuyLoading] = useState(false)
   const [sellLoading, setSellLoading] = useState(false)
+  const [isModerator, setIsModerator] = useState(false)
   const classes = useStyles()
 
   const handleSell = async e => {
@@ -149,6 +150,32 @@ const Marketplace = ({ history }) => {
       console.error(e)
     } finally {
       setSellLoading(false)
+    }
+  }
+
+  const getIsModerator = async () => {
+    try {
+      const response = await request('post', `${host}/isModerator`, {})
+      return response?.result
+    } catch (e) {
+    }
+    return false
+  }
+
+  const handleNsfw = async e => {
+    try {
+      setBuyLoading(true)
+      const response = await request('post', `${host}/setNsfw`, {
+        botID: botToBuy.id
+      })
+      if (response.status !== 'error') {
+        setBuyOpen(false)
+        setWasTryOpen(false)
+      }
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setBuyLoading(false)
     }
   }
 
@@ -225,6 +252,7 @@ const Marketplace = ({ history }) => {
   useEffect(() => {
     (async () => {
       try {
+        setIsModerator(await getIsModerator())
         const marketplaceBots = await request(
           'POST',
           `${host}/listMarketplaceBots`,
@@ -373,6 +401,10 @@ const Marketplace = ({ history }) => {
                 setTryOpen(true)
               }
             }}>Cancel</Button>}
+            {!buyLoading && isModerator && <Button onClick={() => {
+              setBuyOpen(false)
+              handleNsfw()
+            }}>NSFW</Button>}
             {!buyLoading && <Button variant='contained' type='submit'>Buy Now</Button>}
           </DialogActions>
         </form>
