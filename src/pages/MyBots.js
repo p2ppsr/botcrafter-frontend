@@ -9,6 +9,7 @@ import { host } from '../constants'
 import ArrowBack from '@mui/icons-material/ArrowBackIos'
 import BotControls from '../components/BotControls'
 import TrainingEditor from '../components/TrainingEditor'
+import { toast } from 'react-toastify'
 
 const useStyles = makeStyles(theme => ({
   page_wrap: {
@@ -62,6 +63,9 @@ const MyBots = ({ history }) => {
 
   const handleCreate = async () => {
     try {
+      if (name.length > 30) {
+        return toast.error('Bot names can only be 30 characters!')
+      }
       setCreateLoading(true)
       const response = await paidRequest('post', `${host}/createBot`, {
         name,
