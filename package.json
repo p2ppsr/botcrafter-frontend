@@ -11,7 +11,7 @@
     "@mui/material": "^5.11.8",
     "@mui/styles": "^5.11.7",
     "@packetpay/js": "^0.1.6",
-    "authrite-js": "^0.2.14",
+    "authrite-js": "^0.3.2",
     "boomerang-http": "^0.1.0",
     "markdown-to-jsx": "^7.2.0",
     "react": "^17.0.2",
