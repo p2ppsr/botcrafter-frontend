@@ -3,7 +3,7 @@
   "version": "0.1.24",
   "private": true,
   "dependencies": {
-    "@babbage/react-prompt": "^0.2.10",
+    "@babbage/react-prompt": "^0.2.11",
     "@babbage/sdk": "^0.4.44",
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
